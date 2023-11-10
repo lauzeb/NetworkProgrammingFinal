@@ -12,9 +12,14 @@ Host ='127.0.0.1' #socket.gethostname()
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((Host, Port))
-
 print("Client side")
 
+s.sendall("STARTGAME".encode())
+print("Password from server: ", s.recv(2048).decode())
+
+
+
+'''
 while True:
    
     inputs = input("Client ")
@@ -30,9 +35,9 @@ while True:
     
     if (message == 'end'):
         break
-               
+ '''             
        
 print("This is the conclusion of the session.")
   
-s.close()  
+#s.close()  
     
