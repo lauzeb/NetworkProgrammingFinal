@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Oct 27 15:10:40 2023
-
-@author: Benjamin Lauze
-"""
-
-import gui
 import socket
 import threading
 import random
@@ -64,7 +56,31 @@ class ConnectFourServer:
                 #connect users and active game
                 return True # replace with ^
             
-        raise Exception("invalid password") #GUI dialog box        
+        raise Exception("invalid password") #GUI dialog box     
+        
+    def play(self, clientsocket):
+        pass  
+    
+    def joinGame(self, clientsocket):
+        pass  
+    
+    def password(self, clientsocket,password):
+        pass  
+    
+    def exitGame(self, clientsocket):
+        pass  
+    
+    def back(self, clientsocket):
+        pass  
+    
+    def again(self, clientsocket):
+        pass  
+    
+    def moves(self, clientsocket, column):
+        pass  
+    
+    def winCheck(self):
+        pass
         
     
     def respond(self,clientsocket, address, clientData):
@@ -72,7 +88,8 @@ class ConnectFourServer:
         Supported commands [WIP]:
             PLAY
             STARTGAME
-            JOINGAME [passwd]
+            JOINGAME 
+            PASSWORD [passwrd]
             EXITGAME
             BACK
             AGAIN
@@ -84,26 +101,23 @@ class ConnectFourServer:
         
         match command:
             case "PLAY":
-#change lines that have gui to either tk or qt               
-                gui.open_dialog("StartOrJoinGame")
-                #call PLAY method
+                self.play(clientsocket)
             case "STARTGAME":
-               self.startGame(clientsocket)
+                self.startGame(clientsocket)
             case "JOINGAME":
-                pass
-                gui.open_dialog("TypeExistingPassword")
+                self.joinGame(clientsocket)
+            case "PASSWORD":
+                self.password(clientsocket, commandData[1])
             case "EXITGAME":
-                clientsocket.close()
-                #call EXITGAME method
+                self.exitGame(clientsocket)
             case "BACK":
-                gui.open_dialog("MainMenu")
-                #call BACK method            
+                self.back(clientsocket)
             case "AGAIN":
-                gui.open_dialog("GameBoard")
-                #call AGAIN method
+                self.again(clientsocket)
             case "MOVES":
-                pass
-                #call MOVES method
+                self.moves(clientsocket, commandData[1])
+                          
+    
     
     # Individual thread spawned for each connected client
     def clientThread(self, clientsocket, address):
@@ -116,5 +130,3 @@ if __name__ == "__main__":
     server = ConnectFourServer(1234)
     server.start()
 
-    
-    
