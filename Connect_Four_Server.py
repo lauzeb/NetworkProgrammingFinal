@@ -5,7 +5,7 @@ Created on Fri Oct 27 15:10:40 2023
 @author: Benjamin Lauze
 """
 
-
+import gui
 import socket
 import threading
 import random
@@ -84,21 +84,22 @@ class ConnectFourServer:
         
         match command:
             case "PLAY":
-                pass
+#change lines that have gui to either tk or qt               
+                gui.open_dialog("StartOrJoinGame")
                 #call PLAY method
             case "STARTGAME":
                self.startGame(clientsocket)
             case "JOINGAME":
                 pass
-                #call JOINGAME [password] method
+                gui.open_dialog("TypeExistingPassword")
             case "EXITGAME":
-                pass
+                clientsocket.close()
                 #call EXITGAME method
             case "BACK":
-                pass
+                gui.open_dialog("MainMenu")
                 #call BACK method            
             case "AGAIN":
-                pass
+                gui.open_dialog("GameBoard")
                 #call AGAIN method
             case "MOVES":
                 pass
@@ -114,7 +115,6 @@ class ConnectFourServer:
 if __name__ == "__main__":
     server = ConnectFourServer(1234)
     server.start()
-
 
     
     
