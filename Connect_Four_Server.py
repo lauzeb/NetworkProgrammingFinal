@@ -116,10 +116,18 @@ class ConnectFourServer:
     def again(self, clientsocket):
         gui.open_dialog("GameBoard")  
     
-    def moves(self, clientsocket, column):
-        pass  
-    
-    def winCheck(self):
+    def moves(self, column, game, player_symbol):
+        try:
+             for slot in game.game_board[column]:
+                 if slot == 0:
+                     game.game_board[column][slot] = player_symbol
+                     self.winCheck(game)
+                     return
+        except Exception:
+            #game.currentplayer.sendall("Illegal move".encode())
+            pass
+        
+    def winCheck(self, game):
         pass
         
     
@@ -168,4 +176,3 @@ class ConnectFourServer:
 if __name__ == "__main__":
     server = ConnectFourServer(1234)
     server.start()
-    
