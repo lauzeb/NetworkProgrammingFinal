@@ -14,13 +14,22 @@ class ConnectFourGameSession:
         self.password = password
         self.players = [player1, None]
         self.game_board = [[0] * 7 for _ in range(6)] #2d game board
+        self.game_active = False  # Indicates whether the game is active
         
     def add_player(self, player2_socket):
         if self.players[1] is None:
             self.players[1] = player2_socket
             return True  
         else:
-            return False  
+            return False 
+        
+    def activateGame(self):
+        self.game_active = True
+        # Notify both players that the game has started
+        for player_socket in self.players:
+            if player_socket is not None:
+                  player_socket.sendall("Game has started. Make your move.".encode())
+        
 
 class ConnectFourServer:
     
@@ -65,6 +74,14 @@ class ConnectFourServer:
             
         raise Exception("invalid password") #GUI dialog box     
         
+        
+    def all_players_joined(players):
+        for player in players:
+            if player is None:
+                return False
+            return True
+
+        
     def play(self, clientsocket):
         gui.open_dialog("StartOrJoinGame") 
     
@@ -77,10 +94,13 @@ class ConnectFourServer:
                 if game.password == password:
                     if game.add_player(clientsocket):
                         clientsocket.sendall("Password accepted. Joined game.".encode())
-                        return
+                        if self.all_players_joined(game.players):
+                            game.activate_game()
+
+                        return 
                     else:
                         clientsocket.sendall("Game is full.".encode())
-                        return
+                        return 
             clientsocket.sendall("Invalid password.".encode())
         except Exception:
             clientsocket.sendall("Illegal password, please try again.".encode())
@@ -136,8 +156,7 @@ class ConnectFourServer:
                 self.again(clientsocket)
             case "MOVES":
                 self.moves(clientsocket, commandData[1])
-                          
-    
+                
     
     # Individual thread spawned for each connected client
     def clientThread(self, clientsocket, address):
