@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Oct 27 15:27:43 2023
+
+@author: Benjamin Lauze
+"""
+import gui
 import socket
 import threading
 import random
@@ -59,22 +66,22 @@ class ConnectFourServer:
         raise Exception("invalid password") #GUI dialog box     
         
     def play(self, clientsocket):
-        pass  
+        gui.open_dialog("StartOrJoinGame") 
     
     def joinGame(self, clientsocket):
-        pass  
+        gui.open_dialog("TypeExistingPassword") 
     
     def password(self, clientsocket,password):
         pass  
     
     def exitGame(self, clientsocket):
-        pass  
+        clientsocket.close() 
     
     def back(self, clientsocket):
-        pass  
+        gui.open_dialog("MainMenu") 
     
     def again(self, clientsocket):
-        pass  
+        gui.open_dialog("GameBoard")  
     
     def moves(self, clientsocket, column):
         pass  
@@ -129,4 +136,3 @@ class ConnectFourServer:
 if __name__ == "__main__":
     server = ConnectFourServer(1234)
     server.start()
-
