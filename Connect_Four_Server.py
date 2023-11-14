@@ -122,13 +122,43 @@ class ConnectFourServer:
                  if slot == 0:
                      game.game_board[column][slot] = player_symbol
                      self.winCheck(game)
+                         #if !None:
+                             
+                             #a win has occurred, come back tot this later
                      return
+#write this to make it work on both sides for exception                 
         except Exception:
             #game.currentplayer.sendall("Illegal move".encode())
             pass
         
+        
+#check this again later      
     def winCheck(self, game):
-        pass
+        # Check horizontal lines
+       for row in self.game_board:
+           for col in range(4):
+               if row[col] != 0 and row[col] == row[col + 1] == row[col + 2] == row[col + 3]:
+                   return row[col]
+
+       # Check vertical lines
+       for col in range(7):
+           for row in range(3):
+               if self.game_board[row][col] != 0 and self.game_board[row][col] == self.game_board[row + 1][col] == self.game_board[row + 2][col] == self.game_board[row + 3][col]:
+                   return self.game_board[row][col]
+
+       # Check diagonal (down-right and up-right)
+       for col in range(4):
+           for row in range(6):
+               # Down-right
+               if row < 3 and self.game_board[row][col] != 0 and self.game_board[row][col] == self.game_board[row + 1][col + 1] == self.game_board[row + 2][col + 2] == self.game_board[row + 3][col + 3]:
+                   return self.game_board[row][col]
+               # Up-right
+               if row > 2 and self.game_board[row][col] != 0 and self.game_board[row][col] == self.game_board[row - 1][col + 1] == self.game_board[row - 2][col + 2] == self.game_board[row - 3][col + 3]:
+                   return self.game_board[row][col]
+
+       # No winner yet
+       return None
+
         
     
     def respond(self,clientsocket, address, clientData):
