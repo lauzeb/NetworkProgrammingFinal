@@ -72,7 +72,20 @@ class ConnectFourServer:
         gui.open_dialog("TypeExistingPassword") 
     
     def password(self, clientsocket,password):
-        pass  
+        try:
+            for game in self.activeGames:
+                if game.password == password:
+                    if game.add_player(clientsocket):
+                        clientsocket.sendall("Password accepted. Joined game.".encode())
+                        return
+                    else:
+                        clientsocket.sendall("Game is full.".encode())
+                        return
+            clientsocket.sendall("Invalid password.".encode())
+        except Exception:
+            clientsocket.sendall("Illegal password, please try again.".encode())
+            
+  
     
     def exitGame(self, clientsocket):
         clientsocket.close() 
@@ -136,3 +149,4 @@ class ConnectFourServer:
 if __name__ == "__main__":
     server = ConnectFourServer(1234)
     server.start()
+    
