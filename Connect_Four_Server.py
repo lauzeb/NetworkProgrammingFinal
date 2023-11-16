@@ -4,7 +4,6 @@ Created on Fri Oct 27 15:27:43 2023
 
 @author: Benjamin Lauze
 """
-import gui
 import socket
 import threading
 import random
@@ -13,7 +12,7 @@ class ConnectFourGameSession:
     def __init__(self, password, player1):
         self.password = password
         self.players = [player1, None]
-        self.game_board = [[0] * 7 for _ in range(6)] #2d game board
+        self.game_board = [[0 for _ in range(7)] for _ in range(6)]
         self.game_active = False  # Indicates whether the game is active
         
     def add_player(self, player2_socket):
@@ -26,9 +25,43 @@ class ConnectFourGameSession:
     def activateGame(self):
         self.game_active = True
         # Notify both players that the game has started
-        for player_socket in self.players:
-            if player_socket is not None:
-                  player_socket.sendall("Game has started. Make your move.".encode())
+        
+        current_player = self.players[0]
+        symbol = 1 # PLAYER 1
+        
+        while self.game_active:
+            current_player.sendall("YOUR_TURN".encode())
+            
+            # PLAYER SWAP VIA IF STATEMENT
+            other_player = self.players[1] if current_player == self.players[0] else self.players[0]       
+            other_player.sendall("WAITING_TURN".encode())        
+            
+            # SYMBOL SWAP VIA IF STATEMENT
+            symbol = 2 if current_player == self.players[1] else 1
+            
+            move = current_player.recv(2048).decode()
+            self.moves(self,move,symbol)
+            
+            current_player = other_player
+            
+        winnerSocket = "HOST_PLAYER_WON" if current_player == self.players[1] else "JOINING_PLAYER_WON"
+        
+        self.players[0].sendall(f"{winnerSocket}".encode()) 
+        self.players[1].sendall(f"{winnerSocket}".encode()) 
+            
+    def moves(self, column, symbol):
+        for row in range(len(self.game_board) - 1, -1, -1):           
+            if self.game_board[row][column] == 0:
+                self.game_board[row][column] = symbol
+                currentWinCheck = self.winCheck(self)
+                if currentWinCheck is not None:                    
+                    self.game_active == False
+                    return 
+        return "ILLEGAL MOVE"
+    
+    def again(self, clientsocket):
+        self.game_board = [[0 for _ in range(7)] for _ in range(6)]
+        self.game_active = True  
         
 
 class ConnectFourServer:
@@ -80,13 +113,6 @@ class ConnectFourServer:
             if player is None:
                 return False
             return True
-
-        
-    def play(self, clientsocket):
-        gui.open_dialog("StartOrJoinGame") 
-    
-    def joinGame(self, clientsocket):
-        gui.open_dialog("TypeExistingPassword") 
     
     def password(self, clientsocket,password):
         try:
@@ -110,29 +136,14 @@ class ConnectFourServer:
     def exitGame(self, clientsocket):
         clientsocket.close() 
     
-    def back(self, clientsocket):
-        gui.open_dialog("MainMenu") 
-    
     def again(self, clientsocket):
-        gui.open_dialog("GameBoard")  
+        # Find the game associated with the clientsocket
+        for game in self.activeGames:
+            if game.players[0] == clientsocket or game.players[1] == clientsocket:
+                game.again()
+        
     
-    def moves(self, column, game, player_symbol):
-        try:
-             for slot in game.game_board[column]:
-                 if slot == 0:
-                     game.game_board[column][slot] = player_symbol
-                     self.winCheck(game)
-                         #if !None:
-                             
-                             #a win has occurred, come back tot this later
-                     return
-#write this to make it work on both sides for exception                 
-        except Exception:
-            #game.currentplayer.sendall("Illegal move".encode())
-            pass
-        
-        
-#check this again later      
+        #check this again later      
     def winCheck(self, game):
         # Check horizontal lines
        for row in self.game_board:
@@ -164,22 +175,20 @@ class ConnectFourServer:
     def respond(self,clientsocket, address, clientData):
         """
         Supported commands [WIP]:
-            PLAY
+            -PLAY (CLIENT SIDE)
             STARTGAME
             JOINGAME 
             PASSWORD [passwrd]
             EXITGAME
-            BACK
+            -BACK (CLIENT SIDE)
             AGAIN
-            -PLAYABLE MOVES [0 - 6]
+            PLAYABLE MOVES [0 - 6]
         """
        
         commandData = clientData.split()
         command = commandData[0]
         
         match command:
-            case "PLAY":
-                self.play(clientsocket)
             case "STARTGAME":
                 self.startGame(clientsocket)
             case "JOINGAME":
@@ -188,12 +197,8 @@ class ConnectFourServer:
                 self.password(clientsocket, commandData[1])
             case "EXITGAME":
                 self.exitGame(clientsocket)
-            case "BACK":
-                self.back(clientsocket)
             case "AGAIN":
                 self.again(clientsocket)
-            case "MOVES":
-                self.moves(clientsocket, commandData[1])
                 
     
     # Individual thread spawned for each connected client
