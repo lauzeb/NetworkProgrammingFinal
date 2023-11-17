@@ -117,6 +117,7 @@ class ConnectFourServer:
                 return False
             return True
     
+    #The Important Function when considering joining as second user
     def password(self, clientsocket,password):
         try:
             for game in self.activeGames:
@@ -137,6 +138,10 @@ class ConnectFourServer:
   
     
     def exitGame(self, clientsocket):
+        for game in self.activeGames:
+            if clientsocket in game.players:
+                self.activeGames.remove(game)
+                break
         clientsocket.close() 
     
     def again(self, clientsocket):
@@ -180,7 +185,6 @@ class ConnectFourServer:
         Supported commands [WIP]:
             -PLAY (CLIENT SIDE)
             STARTGAME
-            JOINGAME 
             PASSWORD [passwrd]
             EXITGAME
             -BACK (CLIENT SIDE)
@@ -194,8 +198,6 @@ class ConnectFourServer:
         match command:
             case "STARTGAME":
                 self.startGame(clientsocket)
-            case "JOINGAME":
-                self.joinGame(clientsocket)
             case "PASSWORD":
                 self.password(clientsocket, commandData[1])
             case "EXITGAME":
