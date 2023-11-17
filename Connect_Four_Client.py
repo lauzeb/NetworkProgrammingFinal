@@ -6,6 +6,7 @@ Created on Fri Oct 27 15:27:43 2023
 """
 
 from PyQt5 import QtWidgets, uic, QtGui, QtCore
+from PyQt5.QtWidgets import QDialog
 import socket
 import sys
 
@@ -41,10 +42,9 @@ class FirstPage(QtWidgets.QMainWindow):
         widget.setCurrentWidget(secondpage)
         
     def PressedExit(self):
-        #closes GUI &
-        #send EXIT code to server
-        pass
-        
+        #s.sendall("EXITGAME".encode())
+        s.close()
+        widget.close()
         
 class SecondPage(QtWidgets.QMainWindow):
     def __init__(self):
@@ -63,7 +63,7 @@ class SecondPage(QtWidgets.QMainWindow):
         self.show()
 
     def PressedJoin(self):
-        pass
+        widget.setCurrentWidget(joinpage)
         # PULLS UP PASSWORD GUI
         # ASKS FOR PASSWORD
     
@@ -74,16 +74,44 @@ class SecondPage(QtWidgets.QMainWindow):
     def PressedBack(self):
         widget.setCurrentWidget(firstpage)
 
+class JoinPage(QtWidgets.QWidget):
+    def __init__(self):
+        super(JoinPage,self).__init__()
+        uic.loadUi('joinPage.ui',self)
+        
+        self.enterPasswordButton = self.findChild(QtWidgets.QPushButton, "enterPasswordButton")
+        self.enterPasswordButton.clicked.connect(self.PressedEnterPassword)     
+        
+        self.backButton = self.findChild(QtWidgets.QPushButton, "backButton")        
+        self.backButton.clicked.connect(self.PressedBack)     
+        
+        self.passwordEdit = self.findChild(QtWidgets.QLineEdit, "passwordEdit")
+
+        self.show()
+    
+    def PressedEnterPassword(self):
+        password = self.passwordEdit.text()
+        #s.sendall("PASSWORD {password}".encode())
+        pass
+    
+    def PressedBack(self):
+        widget.setCurrentWidget(secondpage)
+
         
 app = QtWidgets.QApplication(sys.argv)
 widget = QtWidgets.QStackedWidget()
+
 firstpage = FirstPage()
 secondpage = SecondPage()
+joinpage = JoinPage()
+
 widget.addWidget(firstpage)
 widget.addWidget(secondpage)
+widget.addWidget(joinpage)
+
 widget.setCurrentWidget(firstpage)
 
 
 widget.show()
-app.exec_()
+sys.exit(app.exec_())
     
