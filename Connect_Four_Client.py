@@ -68,8 +68,10 @@ class SecondPage(QtWidgets.QMainWindow):
         # ASKS FOR PASSWORD
     
     def PressedCreate(self):
-        pass
         # SENDS STARTGAME 
+        #s.sendall("STARTGAME".encode())
+        widget.setCurrentWidget(createpage)
+        pass
         
     def PressedBack(self):
         widget.setCurrentWidget(firstpage)
@@ -156,10 +158,12 @@ widget = QtWidgets.QStackedWidget()
 firstpage = FirstPage()
 secondpage = SecondPage()
 joinpage = JoinPage()
+createpage = CreatePage()
 
 widget.addWidget(firstpage)
 widget.addWidget(secondpage)
 widget.addWidget(joinpage)
+widget.addWidget(createpage)
 
 widget.setCurrentWidget(firstpage)
 
