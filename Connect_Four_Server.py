@@ -48,6 +48,9 @@ class ConnectFourGameSession:
         
         self.players[0].sendall(f"{winnerSocket}".encode()) 
         self.players[1].sendall(f"{winnerSocket}".encode()) 
+        
+        # TODO
+        # AGAIN SEQUENCE
             
     def moves(self, column, symbol):
         for row in range(len(self.game_board) - 1, -1, -1):           
