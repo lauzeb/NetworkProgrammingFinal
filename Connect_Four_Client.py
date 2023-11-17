@@ -86,18 +86,70 @@ class JoinPage(QtWidgets.QWidget):
         self.backButton.clicked.connect(self.PressedBack)     
         
         self.passwordEdit = self.findChild(QtWidgets.QLineEdit, "passwordEdit")
-
+        
+        self.errorLabal = self.findChild(QtWidgets.QLabel, "errorLabel")
+        
         self.show()
     
     def PressedEnterPassword(self):
         password = self.passwordEdit.text()
         #s.sendall("PASSWORD {password}".encode())
-        pass
+        
+        response = s.recv(2048).decode()
+        
+        if response == "PASSWORD_ACCEPTED":
+            #Preforms the method for the client side activate game
+            GameLoop()
+        else:
+            self.errorLabel.setEnabled(True)
+            self.errorLabal.setText("Please try again. Error: {response}")
     
     def PressedBack(self):
         widget.setCurrentWidget(secondpage)
-
         
+
+class CreatePage(QtWidgets.QWidget):
+    def __init__(self):
+        super(JoinPage,self).__init__()
+        uic.loadUi('createPage.ui',self)
+        
+        self.cancelButton = self.findChild(QtWidgets.QPushButton, "cancelButton")        
+        self.cancelButton.clicked.connect(self.PressedCancel)     
+                
+        self.passwordLabel = self.findChild(QtWidgets.QLabel, "passwordLabel")
+        
+        self.show()
+        
+    def PressedCancel(self):
+        #tells client to
+        pass
+
+
+def GameLoop(self):
+   while True:
+       move = s.recv(2048).decode()
+       
+       match move:
+           case "YOUR_TURN":
+               self.handlePlayerTurn()
+           case "WAITING_TURN":
+               self.handleWaiting()
+           # case for winner
+           case default:
+               self.handleWin()
+               
+               
+               
+def handlePlayerTurn():
+    pass
+
+def handleWaiting():
+    pass
+
+def handleWin():
+    pass    
+               
+       
 app = QtWidgets.QApplication(sys.argv)
 widget = QtWidgets.QStackedWidget()
 
