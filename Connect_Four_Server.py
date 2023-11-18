@@ -179,7 +179,9 @@ class ConnectFourServer:
        # No winner yet
        return None
 
-   
+    def createBack(self, clientsocket):
+       pass
+       #todo
     
     def respond(self,clientsocket, address, clientData):
         """
@@ -208,6 +210,8 @@ class ConnectFourServer:
                 self.again(clientsocket)
             case "CANCELGAME":
                 self.cancelGame(clientsocket)
+            case "CREATEBACK":
+                self.createBack(clientsocket)
                 
     
     # Individual thread spawned for each connected client
