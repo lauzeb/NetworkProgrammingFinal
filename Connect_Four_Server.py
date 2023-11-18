@@ -1,9 +1,10 @@
-# -*- coding: utf-8 -*-
+#-*- coding: utf-8 -*-
 """
 Created on Fri Oct 27 15:27:43 2023
 
 @author: Benjamin Lauze
 """
+
 import socket
 import threading
 import random
@@ -21,6 +22,7 @@ class ConnectFourGameSession:
             return True  
         else:
             return False 
+        
         
     def activateGame(self):
         self.game_active = True
@@ -49,11 +51,7 @@ class ConnectFourGameSession:
         self.players[0].sendall(f"{winnerSocket}".encode()) 
         self.players[1].sendall(f"{winnerSocket}".encode()) 
         
-        # TODO
-        # AGAIN SEQUENCE
-        
-        
-        
+        self.endgameSequence()
         
             
     def moves(self, column, symbol):
@@ -65,16 +63,19 @@ class ConnectFourGameSession:
                     self.game_active == False
                     return 
         return 
+          
+                
+    def EndgameSequence(self, clientsocket):        
+      if self.players[0].recv(2048).decode() == "AGAIN_ACCEPTED" and self.players[1].recv(2048).decode() == "AGAIN_ACCEPTED":
+           self.game_board = [[0 for _ in range(7)] for _ in range(6)] 
+           self.activateGame(self)
+      elif self.players[0].recv(2048).decode() == "CANCELGAME" or self.players[1].recv(2048).decode() == "CANCELGAME":
+           self.players[0].sendall("".encode()) 
+           self.players[1].sendall("".encode()) 
+           self.game_active = False
+           self.remove_game(self)
     
-    def again(self, clientsocket):
-        if self.players[0].recv(2048).decode() == "AGAIN_ACCEPTED" and self.players[1].recv(2048).decode() == "AGAIN_ACCEPTED":
-             self.game_board = [[0 for _ in range(7)] for _ in range(6)] 
-             self.game_active = True
-             
         
-        
-        
-
 class ConnectFourServer:
     
     def __init__(self,port):
@@ -108,15 +109,7 @@ class ConnectFourServer:
         for game in self.activeGames:
             if password == game.password:
                 return True
-        return False
-    
-    def passwordMatch(self,password): #called in JOIN GAME METHOD
-        for game in self.activeGames:
-            if(password == game.password):
-                #connect users and active game
-                return True # replace with ^
-            
-        raise Exception("invalid password") #GUI dialog box     
+        return False    
         
         
     def all_players_joined(players):
@@ -141,18 +134,15 @@ class ConnectFourServer:
             clientsocket.sendall("Invalid password.".encode())
         except Exception:
             clientsocket.sendall("Illegal password, please try again.".encode())
-            
-  
+    
+    
+    def remove_game(self, game):
+        if game in self.active_games:
+            self.active_games.remove(game)
     
     def exitGame(self, clientsocket):
         clientsocket.close() 
     
-    def cancelGame(self,clientsocket):
-        if self.players[0].recv(2048).decode() == "CANCEL_ACCEPTED" or self.players[1].recv(2048).decode() == "CANCEL_ACCEPTED":
-            pass
-        
-    
-        #check this again later      
     def winCheck(self, game):
         # Check horizontal lines
        for row in self.game_board:
@@ -180,8 +170,7 @@ class ConnectFourServer:
        return None
 
     def createBack(self, clientsocket):
-       pass
-       #todo
+        self.remove_game(self)
     
     def respond(self,clientsocket, address, clientData):
         """
