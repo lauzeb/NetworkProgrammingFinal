@@ -6,42 +6,40 @@ Created on Fri Oct 27 15:27:43 2023
 """
 
 from PyQt5 import QtWidgets, uic, QtGui, QtCore
-from PyQt5.QtWidgets import QDialog
 import socket
 import sys
 
+#port and default ip
 Port = 1234
 Host ='127.0.0.1' #socket.gethostname()
-        
+
+#socket creation and connection
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 #s.connect((Host, Port))
 print("Client side")
         
-#s.sendall("STARTGAME".encode())
-#print("Password from server: ", s.recv(2048).decode())
-        
-#secondpage = None
 
 
 class FirstPage(QtWidgets.QMainWindow):
+    # default page ui
     def __init__(self):
         super(FirstPage, self).__init__()
         uic.loadUi('title.ui', self)
         
         self.playButton = self.findChild(QtWidgets.QPushButton, "playButton")
-        self.playButton.clicked.connect(self.PressedPlay)
+        self.playButton.clicked.connect(self.pressed_play)
 
         self.exitButton = self.findChild(QtWidgets.QPushButton, "exitButton")
-        self.exitButton.clicked.connect(self.PressedExit)
+        self.exitButton.clicked.connect(self.pressed_exit)
         
         #self.testLabel = self.findChild(QtWidgets.QLabel,"testLabel")
         
         self.show()
         
-    def PressedPlay(self):
+    def pressed_play(self):
         widget.setCurrentWidget(secondpage)
         
-    def PressedExit(self):
+    def pressed_exit(self):
         #s.sendall("EXITGAME".encode())
         s.close()
         widget.close()
@@ -52,28 +50,27 @@ class SecondPage(QtWidgets.QMainWindow):
         uic.loadUi('screen2.ui', self)
     
         self.createButton = self.findChild(QtWidgets.QPushButton, "createButton")        
-        self.createButton.clicked.connect(self.PressedCreate)
+        self.createButton.clicked.connect(self.pressed_create)
         
         self.joinButton = self.findChild(QtWidgets.QPushButton, "joinButton")        
-        self.joinButton.clicked.connect(self.PressedJoin)
+        self.joinButton.clicked.connect(self.pressed_join)
 
         self.backButton = self.findChild(QtWidgets.QPushButton, "backButton")        
-        self.backButton.clicked.connect(self.PressedBack)        
+        self.backButton.clicked.connect(self.pressed_back)        
         
         self.show()
 
-    def PressedJoin(self):
+    def pressed_join(self):
         widget.setCurrentWidget(joinpage)
         # PULLS UP PASSWORD GUI
         # ASKS FOR PASSWORD
     
-    def PressedCreate(self):
+    def pressed_create(self):
         # SENDS STARTGAME 
         #s.sendall("STARTGAME".encode())
         widget.setCurrentWidget(createpage)
-        pass
         
-    def PressedBack(self):
+    def pressed_back(self):
         widget.setCurrentWidget(firstpage)
 
 class JoinPage(QtWidgets.QWidget):
@@ -82,74 +79,120 @@ class JoinPage(QtWidgets.QWidget):
         uic.loadUi('joinPage.ui',self)
         
         self.enterPasswordButton = self.findChild(QtWidgets.QPushButton, "enterPasswordButton")
-        self.enterPasswordButton.clicked.connect(self.PressedEnterPassword)     
+        self.enterPasswordButton.clicked.connect(self.pressed_enter_password)     
         
         self.backButton = self.findChild(QtWidgets.QPushButton, "backButton")        
-        self.backButton.clicked.connect(self.PressedBack)     
+        self.backButton.clicked.connect(self.pressed_back)     
         
         self.passwordEdit = self.findChild(QtWidgets.QLineEdit, "passwordEdit")
         
         self.errorLabal = self.findChild(QtWidgets.QLabel, "errorLabel")
-        
+                
         self.show()
     
-    def PressedEnterPassword(self):
+    def pressed_enter_password(self):
         password = self.passwordEdit.text()
         #s.sendall("PASSWORD {password}".encode())
         
         response = s.recv(2048).decode()
         
         if response == "PASSWORD_ACCEPTED":
-            #Preforms the method for the client side activate game
-            GameLoop()
+            widget.setCurrentWidget(game_board)
+            widget.setCurrentWidget(game_board)
+            widget.setCurrentWidget(game_board)
         else:
             self.errorLabel.setEnabled(True)
             self.errorLabal.setText("Please try again. Error: {response}")
-    
-    def PressedBack(self):
+        
+    def pressed_back(self):
         widget.setCurrentWidget(secondpage)
         
 
 class CreatePage(QtWidgets.QWidget):
     def __init__(self):
-        super(JoinPage,self).__init__()
+        super(CreatePage,self).__init__()
         uic.loadUi('createPage.ui',self)
         
         self.cancelButton = self.findChild(QtWidgets.QPushButton, "cancelButton")        
-        self.cancelButton.clicked.connect(self.PressedCancel)     
+        self.cancelButton.clicked.connect(self.pressed_cancel)     
                 
         self.passwordLabel = self.findChild(QtWidgets.QLabel, "passwordLabel")
         
+        self.game_logic = None
+        
         self.show()
         
-    def PressedCancel(self):
-        #tells client to
+        # wait for person to join 
+        
+    def pressed_cancel(self):
+        s.sendall("CANCELGAME".encode())
+        
+        widget.setCurrentWidget(secondpage)
+    
+    def handle_join_with_correct_passowrd(self):
         pass
 
 
-def GameLoop(self):
-   while True:
-       move = s.recv(2048).decode()
-       
-       match move:
-           case "YOUR_TURN":
-               self.handlePlayerTurn()
-           case "WAITING_TURN":
-               self.handleWaiting()
-           # case for winner
-           case default:
-               self.handleWin()
-               
-               
-               
-def handlePlayerTurn():
-    pass
+class GameBoard(QtWidgets.QMainWindow):
+    def __init__(self):
+        super(GameBoard, self).__init__()
+        uic.loadUi('gameBoard.ui', self)
+        self.game_active = False
+        self.players = [None, None]
+        self.symbol = None
+        self.current_player = None
+        self.column_buttons = [self.findChild(QtWidgets.QPushButton, f"column{column}") for column in range(7)]
 
-def handleWaiting():
-    pass
+    def start_game(self):
+        self.game_active = True
+        self.current_player = self.players[0]
+        self.symbol = 1  # Player 1 symbol
 
-def handleWin():
-    pass    
+    def handlePlayerTurn(self):
+        pass 
+    
+    def handleWaiting(self):
+        pass
+
+    def handleWin(self):
+        pass
+    
+    def enable_all_buttons(self):
+        for button in self.column_buttons:
+            button.setEnabled(True)
+    
+    def disable_all_buttons(self):
+        for button in self.column_buttons:
+            button.setEnabled(False)
+
+class GameLogic(QtCore.QObject):
+        
+    def __init__(self):
+        super().__init__()
+        self.game_active = False
+        self.move_signal = QtCore.pyqtSignal()
+        self.wait_signal = QtCore.pyqtSignal()
+        self.win_signal = QtCore.pyqtSignal(str)
+
+    def start_game(self):
+        # Start the game logic, set game_active to True, and begin the game loop
+        self.game_active = True
+        self.gameloop()
+    
+    
+    def gameloop(self):
+       while self.game_active:
+           move = s.recv(2048).decode()
+           
+           match move:
+               case "YOUR_TURN":
+                   self.move_signal.emit()
+               case "WAITING_TURN":
+                   self.wait_signal.emit()
+               # case for winner
+               case default:
+                   self.game_active = False
+                   self.game_board.win_signal.emit()
                
        
 app = QtWidgets.QApplication(sys.argv)
@@ -159,11 +202,18 @@ firstpage = FirstPage()
 secondpage = SecondPage()
 joinpage = JoinPage()
 createpage = CreatePage()
+game_board = GameBoard()
+game_logic = GameLogic(game_board)
 
 widget.addWidget(firstpage)
 widget.addWidget(secondpage)
 widget.addWidget(joinpage)
 widget.addWidget(createpage)
+widget.addWidget(game_board)
+
+game_logic.move_signal.connect(game_board.handlePlayerTurn)
+game_logic.wait_signal.connect(game_board.handleWaiting)
+game_logic.win_signal.connect(game_board.handleWin)
 
 widget.setCurrentWidget(firstpage)
 
