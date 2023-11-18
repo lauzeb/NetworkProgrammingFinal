@@ -60,7 +60,7 @@ class ConnectFourGameSession:
                 if currentWinCheck is not None:                    
                     self.game_active == False
                     return 
-        return "ILLEGAL MOVE"
+        return 
     
     def again(self, clientsocket):
         self.game_board = [[0 for _ in range(7)] for _ in range(6)]
@@ -117,13 +117,12 @@ class ConnectFourServer:
                 return False
             return True
     
-    #The Important Function when considering joining as second user
     def password(self, clientsocket,password):
         try:
             for game in self.activeGames:
                 if game.password == password:
                     if game.add_player(clientsocket):
-                        clientsocket.sendall("Password accepted. Joined game.".encode())
+                        clientsocket.sendall("PASSWORD_ACCEPTED".encode())
                         if self.all_players_joined(game.players):
                             game.activate_game()
 
@@ -138,10 +137,6 @@ class ConnectFourServer:
   
     
     def exitGame(self, clientsocket):
-        for game in self.activeGames:
-            if clientsocket in game.players:
-                self.activeGames.remove(game)
-                break
         clientsocket.close() 
     
     def again(self, clientsocket):
@@ -149,6 +144,10 @@ class ConnectFourServer:
         for game in self.activeGames:
             if game.players[0] == clientsocket or game.players[1] == clientsocket:
                 game.again()
+                
+    def cancelGame(self,clientsocket):
+        pass
+        #TODO
         
     
         #check this again later      
@@ -185,6 +184,7 @@ class ConnectFourServer:
         Supported commands [WIP]:
             -PLAY (CLIENT SIDE)
             STARTGAME
+            JOINGAME 
             PASSWORD [passwrd]
             EXITGAME
             -BACK (CLIENT SIDE)
@@ -204,6 +204,8 @@ class ConnectFourServer:
                 self.exitGame(clientsocket)
             case "AGAIN":
                 self.again(clientsocket)
+            case "CANCELGAME":
+                self.cancelGame(clientsocket)
                 
     
     # Individual thread spawned for each connected client
