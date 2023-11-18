@@ -125,7 +125,7 @@ class CreatePage(QtWidgets.QWidget):
         # wait for person to join 
         
     def pressed_cancel(self):
-        s.sendall("CANCELGAME".encode())
+        s.sendall("CREATEBACK".encode())
         
         widget.setCurrentWidget(secondpage)
     
