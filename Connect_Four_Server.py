@@ -51,6 +51,10 @@ class ConnectFourGameSession:
         
         # TODO
         # AGAIN SEQUENCE
+        
+        
+        
+        
             
     def moves(self, column, symbol):
         for row in range(len(self.game_board) - 1, -1, -1):           
@@ -63,8 +67,12 @@ class ConnectFourGameSession:
         return 
     
     def again(self, clientsocket):
-        self.game_board = [[0 for _ in range(7)] for _ in range(6)]
-        self.game_active = True  
+        if self.players[0].recv(2048).decode() == "AGAIN_ACCEPTED" and self.players[1].recv(2048).decode() == "AGAIN_ACCEPTED":
+             self.game_board = [[0 for _ in range(7)] for _ in range(6)] 
+             self.game_active = True
+             
+        
+        
         
 
 class ConnectFourServer:
@@ -139,15 +147,9 @@ class ConnectFourServer:
     def exitGame(self, clientsocket):
         clientsocket.close() 
     
-    def again(self, clientsocket):
-        # Find the game associated with the clientsocket
-        for game in self.activeGames:
-            if game.players[0] == clientsocket or game.players[1] == clientsocket:
-                game.again()
-                
     def cancelGame(self,clientsocket):
-        pass
-        #TODO
+        if self.players[0].recv(2048).decode() == "CANCEL_ACCEPTED" or self.players[1].recv(2048).decode() == "CANCEL_ACCEPTED":
+            pass
         
     
         #check this again later      
@@ -177,7 +179,7 @@ class ConnectFourServer:
        # No winner yet
        return None
 
-        
+   
     
     def respond(self,clientsocket, address, clientData):
         """
