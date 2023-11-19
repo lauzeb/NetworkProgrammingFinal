@@ -11,14 +11,13 @@ import sys
 
 #port and default ip
 Port = 1234
-Host ='127.0.0.1' #socket.gethostname()
+Host = socket.gethostname()
 
 #socket creation and connection
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#s.connect((Host, Port))
+s.connect((Host, Port))
 print("Client side")
         
-
 
 class FirstPage(QtWidgets.QMainWindow):
     # default page ui
@@ -40,7 +39,7 @@ class FirstPage(QtWidgets.QMainWindow):
         widget.setCurrentWidget(secondpage)
         
     def pressed_exit(self):
-        #s.sendall("EXITGAME".encode())
+        s.sendall("EXITGAME".encode())
         s.close()
         widget.close()
         
@@ -67,7 +66,7 @@ class SecondPage(QtWidgets.QMainWindow):
     
     def pressed_create(self):
         # SENDS STARTGAME 
-        #s.sendall("STARTGAME".encode())
+        s.sendall("STARTGAME".encode())
         widget.setCurrentWidget(createpage)
         
     def pressed_back(self):
@@ -86,29 +85,29 @@ class JoinPage(QtWidgets.QWidget):
         
         self.passwordEdit = self.findChild(QtWidgets.QLineEdit, "passwordEdit")
         
-        self.errorLabal = self.findChild(QtWidgets.QLabel, "errorLabel")
+        self.errorLabel = self.findChild(QtWidgets.QLabel, "errorLabel")
                 
         self.show()
     
     def pressed_enter_password(self):
         password = self.passwordEdit.text()
-        #s.sendall("PASSWORD {password}".encode())
+        s.sendall("PASSWORD {password}".encode())
         
         response = s.recv(2048).decode()
         
         if response == "PASSWORD_ACCEPTED":
             widget.setCurrentWidget(game_board)
-            widget.setCurrentWidget(game_board)
-            widget.setCurrentWidget(game_board)
         else:
             self.errorLabel.setEnabled(True)
-            self.errorLabal.setText("Please try again. Error: {response}")
+            self.errorLabel.setText("Please try again. Error: {response}")
         
     def pressed_back(self):
         widget.setCurrentWidget(secondpage)
         
 
 class CreatePage(QtWidgets.QWidget):
+    
+        
     def __init__(self):
         super(CreatePage,self).__init__()
         uic.loadUi('createPage.ui',self)
@@ -119,19 +118,29 @@ class CreatePage(QtWidgets.QWidget):
         self.passwordLabel = self.findChild(QtWidgets.QLabel, "passwordLabel")
         
         self.game_logic = None
+        """
+        lobby_password = s.recv(2048).decode()
         
+        self.passwordLabel.setText(str(lobby_password))
+        
+        somehow breaks UI HELP US 
+        """
         self.show()
-        
-        # wait for person to join 
+        """
+        self.listen_for_password_accepted()
+        """
         
     def pressed_cancel(self):
         s.sendall("CREATEBACK".encode())
         
         widget.setCurrentWidget(secondpage)
-    
-    def handle_join_with_correct_passowrd(self):
-        pass
-
+    """
+    def listen_for_password_accepted(self):
+        while True: 
+            message = s.recv(2048).decode()
+            if message == "PASSWORD_ACCEPTED":
+                widget.setCurrentWidget(game_board)
+      """          
 
 class GameBoard(QtWidgets.QMainWindow):
     def __init__(self):
@@ -167,12 +176,14 @@ class GameBoard(QtWidgets.QMainWindow):
 
 class GameLogic(QtCore.QObject):
         
-    def __init__(self):
+    move_signal = QtCore.pyqtSignal()
+    wait_signal = QtCore.pyqtSignal()
+    win_signal = QtCore.pyqtSignal(str)
+        
+    def __init__(self,game_board):
         super().__init__()
+        self.game_board = game_board
         self.game_active = False
-        self.move_signal = QtCore.pyqtSignal()
-        self.wait_signal = QtCore.pyqtSignal()
-        self.win_signal = QtCore.pyqtSignal(str)
 
     def start_game(self):
         # Start the game logic, set game_active to True, and begin the game loop
