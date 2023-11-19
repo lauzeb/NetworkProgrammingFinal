@@ -117,10 +117,7 @@ class ConnectFourServer:
         
         
     def all_players_joined(players):
-        for player in players:
-            if player is None:
-                return False
-            return True
+        return True if players[1] != None else False
     
     def password(self, clientsocket,password):
         try:
@@ -128,6 +125,7 @@ class ConnectFourServer:
                 if game.password == password:
                     if game.add_player(clientsocket):
                         clientsocket.sendall("PASSWORD_ACCEPTED".encode())
+                        game.players[0].sendall("PASSWORD_ACCEPTED".encode())
                         if self.all_players_joined(game.players):
                             game.activate_game()
 
@@ -142,6 +140,7 @@ class ConnectFourServer:
     
     def exitGame(self, clientsocket):
         clientsocket.close() 
+        print(f"Closed Connection with client: {clientsocket}")
     
     def winCheck(self, game):
         # Check horizontal lines
@@ -170,7 +169,10 @@ class ConnectFourServer:
        return None
 
     def createBack(self, clientsocket):
-        self.remove_game(self)
+        for game in self.activeGames:
+            if(game.players[0] == clientsocket):
+                game.remove_game()  
+                break
     
     def respond(self,clientsocket, address, clientData):
         """
@@ -203,12 +205,21 @@ class ConnectFourServer:
                 self.createBack(clientsocket)
                 
     
-    # Individual thread spawned for each connected client
+        # Individual thread spawned for each connected client
     def clientThread(self, clientsocket, address):
         while True:
-            message = clientsocket.recv(2048).decode()
-            
-            self.respond(clientsocket, address, message)
+            try:
+                message = clientsocket.recv(2048).decode()
+                if not message:
+                    break  # No more data received, exit the loop and thread
+                self.respond(clientsocket, address, message)
+            except Exception as e:
+                print(f"Error: {e}. Socket has been closed closing thread")                
+                break  # Socket likely closed, exit the loop and thread
+
+
+
+
                             
 if __name__ == "__main__":
     server = ConnectFourServer(1234)
