@@ -65,7 +65,7 @@ class ConnectFourGameSession:
         return 
           
                 
-    def EndgameSequence(self, clientsocket):        
+    def endgameSequence(self, clientsocket):        
       if self.players[0].recv(2048).decode() == "AGAIN_ACCEPTED" and self.players[1].recv(2048).decode() == "AGAIN_ACCEPTED":
            self.game_board = [[0 for _ in range(7)] for _ in range(6)] 
            self.activateGame(self)
