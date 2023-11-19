@@ -70,10 +70,14 @@ class ConnectFourGameSession:
            self.game_board = [[0 for _ in range(7)] for _ in range(6)] 
            self.activateGame(self)
       elif self.players[0].recv(2048).decode() == "CANCELGAME" or self.players[1].recv(2048).decode() == "CANCELGAME":
-           self.players[0].sendall("".encode()) 
-           self.players[1].sendall("".encode()) 
+           self.players[0].sendall("FORCED_CANCEL".encode()) 
+           self.players[1].sendall("FORCED_CANCEL".encode()) 
            self.game_active = False
            self.remove_game(self)
+    
+    def remove_game(self, game):
+        if game in self.active_games:
+            self.active_games.remove(game)
     
         
 class ConnectFourServer:
@@ -135,10 +139,6 @@ class ConnectFourServer:
         except Exception:
             clientsocket.sendall("Illegal password, please try again.".encode())
     
-    
-    def remove_game(self, game):
-        if game in self.active_games:
-            self.active_games.remove(game)
     
     def exitGame(self, clientsocket):
         clientsocket.close() 
