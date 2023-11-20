@@ -226,13 +226,25 @@ class EndGameSequence(QtWidgets.QWidget):
         self.leaveButton = self.findChild(QtWidgets.QPushButton, "leaveButton")        
         self.leaveButton.clicked.connect(self.pressed_leave)     
                 
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.onTimeout)
+        self.timer.start(60000)  # 60 seconds in milliseconds
+        
         self.show()
     
     def pressed_play_again(self):
-        pass
+        self.timer.stop()
+        s.sendall("AGAIN_ACCEPTED".encode())
         
     def pressed_leave(self):
-        pass
+        self.timer.stop()
+        s.sendall("CANCELGAME".encode())
+        
+    def onTimeout(self):
+        # Timeout logic
+        print("60 seconds have passed. Returning to the main menu.")
+        s.sendall("CANCELGAME".encode())
+        widget.setCurrentWidget(firstpage)  
     
     
 app = QtWidgets.QApplication(sys.argv)
