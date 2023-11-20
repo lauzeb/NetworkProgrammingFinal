@@ -32,11 +32,12 @@ class ConnectFourGameSession:
         symbol = 1 # PLAYER 1
         
         while self.game_active:
-            current_player.sendall("YOUR_TURN".encode())
+            
+            current_player.sendall(f"YOUR_TURN {self.game_board}".encode())
             
             # PLAYER SWAP VIA IF STATEMENT
             other_player = self.players[1] if current_player == self.players[0] else self.players[0]       
-            other_player.sendall("WAITING_TURN".encode())        
+            other_player.sendall(f"WAITING_TURN {self.game_board}".encode())        
             
             # SYMBOL SWAP VIA IF STATEMENT
             symbol = 2 if current_player == self.players[1] else 1
@@ -46,7 +47,7 @@ class ConnectFourGameSession:
             
             current_player = other_player
             
-        winnerSocket = "HOST_PLAYER_WON" if current_player == self.players[1] else "JOINING_PLAYER_WON"
+        winnerSocket = f"HOST_PLAYER_WON {self.game_board}" if current_player == self.players[1] else f"JOINING_PLAYER_WON {self.game_board}"
         
         self.players[0].sendall(f"{winnerSocket}".encode()) 
         self.players[1].sendall(f"{winnerSocket}".encode()) 
