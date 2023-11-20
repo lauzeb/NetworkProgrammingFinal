@@ -147,24 +147,30 @@ class GameBoard(QtWidgets.QMainWindow):
         super(GameBoard, self).__init__()
         uic.loadUi('gameBoard.ui', self)
         self.game_active = False
-        self.players = [None, None]
-        self.symbol = None
-        self.current_player = None
         self.column_buttons = [self.findChild(QtWidgets.QPushButton, f"column{column}") for column in range(7)]
 
+        for idx, button in enumerate(self.column_buttons):
+            button.clicked.connect(lambda _, idx=idx: self.pressedButton(idx))
+        #for loop goes through each button and connects using lambda function in relation to index 
+        
+      
     def start_game(self):
         self.game_active = True
-        self.current_player = self.players[0]
-        self.symbol = 1  # Player 1 symbol
-
+        
+        
+    def pressedButton(self,column):
+        s.sendall(f"MOVE {column}".encode())
+        self.disable_all_buttons()
+        
     def handlePlayerTurn(self):
-        pass 
-    
+        self.enable_all_buttons() 
+        
     def handleWaiting(self):
-        pass
+        self.disable_all_buttons()
 
     def handleWin(self):
-        pass
+        self.disable_all_buttons()
+        
     
     def enable_all_buttons(self):
         for button in self.column_buttons:
@@ -194,8 +200,11 @@ class GameLogic(QtCore.QObject):
     def gameloop(self):
        while self.game_active:
            move = s.recv(2048).decode()
+           move.split()
            
-           match move:
+           # UPDATE BOARD
+           
+           match move[0]:
                case "YOUR_TURN":
                    self.move_signal.emit()
                case "WAITING_TURN":
@@ -205,7 +214,27 @@ class GameLogic(QtCore.QObject):
                    self.game_active = False
                    self.game_board.win_signal.emit()
                
-       
+                
+class EndGameSequence(QtWidgets.QWidget):
+    def __init__(self):
+        super(EndGameSequence,self).__init__()
+        uic.loadUi('endGameSequence.ui',self)
+        
+        self.playAgainButton = self.findChild(QtWidgets.QPushButton, "playAgainButton")
+        self.playAgainButton.clicked.connect(self.pressed_play_again)     
+        
+        self.leaveButton = self.findChild(QtWidgets.QPushButton, "leaveButton")        
+        self.leaveButton.clicked.connect(self.pressed_leave)     
+                
+        self.show()
+    
+    def pressed_play_again(self):
+        pass
+        
+    def pressed_leave(self):
+        pass
+    
+    
 app = QtWidgets.QApplication(sys.argv)
 widget = QtWidgets.QStackedWidget()
 
