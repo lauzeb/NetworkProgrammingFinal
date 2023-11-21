@@ -63,7 +63,7 @@ class ConnectFourGameSession:
             self.moves(current_move,symbol)
             
             current_player = other_player
-            
+        board_json = json.dumps(self.game_board)    
         winnerSocket = f"HOST_PLAYER_WON {self.game_board}" if current_player == self.players[1] else f"JOINING_PLAYER_WON {self.game_board}"
         
         self.players[0].sendall(f"{winnerSocket}".encode()) 
@@ -73,38 +73,62 @@ class ConnectFourGameSession:
         
             
     def moves(self, column, symbol):
+        
         for row in range(len(self.game_board) - 1, -1, -1):           
             if self.game_board[row][column] == 0:
                 self.game_board[row][column] = symbol
-                currentWinCheck = self.winCheck(self)
-                if currentWinCheck is not None:                    
-                    self.game_active == False
-                    return 
+                currentWinCheck = self.winCheck()
+                if currentWinCheck is not None:
+                    print("wincheck hit", currentWinCheck)
+                    self.print_board(self.game_board)
+                    self.game_active = False
+                     
+                break
         return 
+
+    def print_board(self,board):
+        for row in board:
+            print(" ".join(str(cell) for cell in row))
+    #deBUG
     
-    def winCheck(self, game):
-        # Check horizontal lines
-       for row in self.game_board:
+    def winCheck(self):
+        
+       for symbol in [1,2]:
+            # Check horizontal lines
+           for row in self.game_board:
+               for col in range(4):
+                   if row[col] == row[col + 1] == row[col + 2] == row[col + 3] == symbol:
+                       print("H hit")
+                       return symbol
+    
+           # Check vertical lines
+           for col in range(7):
+               for row in range(3):
+                   if ( self.game_board[row][col] == self.game_board[row + 1][col] == 
+                       self.game_board[row + 2][col] == self.game_board[row + 3][col] == symbol):
+                       print("V hit")
+                       return symbol
+    
+           # Check diagonal (down-right and up-right)
            for col in range(4):
-               if row[col] != 0 and row[col] == row[col + 1] == row[col + 2] == row[col + 3]:
-                   return row[col]
+               for row in range(6):
+                   # Down-right
+                   if (row < 3 and self.game_board[row][col] == 
+                       self.game_board[row + 1][col + 1] == 
+                       self.game_board[row + 2][col + 2] == 
+                       self.game_board[row + 3][col + 3] == symbol ):
+                       print("D hit")
 
-       # Check vertical lines
-       for col in range(7):
-           for row in range(3):
-               if self.game_board[row][col] != 0 and self.game_board[row][col] == self.game_board[row + 1][col] == self.game_board[row + 2][col] == self.game_board[row + 3][col]:
-                   return self.game_board[row][col]
+                       return symbol
+                   # Up-right
+                   if ( row > 2 and self.game_board[row][col] == 
+                        self.game_board[row - 1][col + 1] == 
+                        self.game_board[row - 2][col + 2] ==
+                        self.game_board[row - 3][col + 3] == symbol):
+                       print("D hit")
 
-       # Check diagonal (down-right and up-right)
-       for col in range(4):
-           for row in range(6):
-               # Down-right
-               if row < 3 and self.game_board[row][col] != 0 and self.game_board[row][col] == self.game_board[row + 1][col + 1] == self.game_board[row + 2][col + 2] == self.game_board[row + 3][col + 3]:
-                   return self.game_board[row][col]
-               # Up-right
-               if row > 2 and self.game_board[row][col] != 0 and self.game_board[row][col] == self.game_board[row - 1][col + 1] == self.game_board[row - 2][col + 2] == self.game_board[row - 3][col + 3]:
-                   return self.game_board[row][col]
-
+                       return symbol
+    
        # No winner yet
        return None
           
