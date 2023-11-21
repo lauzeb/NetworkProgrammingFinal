@@ -144,7 +144,7 @@ def play_game():
                     game_active = False  # Breaks the inner loop, ending the game
         
                 # Add more conditions based on the server messages for other game states
-        
+            
             # IMPLEMENT AGAIN FUNCTIONALITY
             
             endGameResponse = input("AGAIN or LEAVE, either leave the other will also ")
